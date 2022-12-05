@@ -1,7 +1,7 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const ModuleFederationPlugin = require("webpack/lib/container/ModuleFederationPlugin");
-const { dependencies } = require("../package.json");
 const path = require("path");
+const { dependencies } = require("../package.json");
 
 module.exports = {
   mode: "development",
@@ -10,13 +10,12 @@ module.exports = {
     extensions: [".js", ".jsx"],
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, "../", "index.html"),
-    }),
     new ModuleFederationPlugin({
-      name: "Host",
-      remotes: {
-        Remote: `Remote@http://localhost:4000/remoteEntry.js`,
+      name: "Remote",
+      filename: "remoteEntry.js",
+      exposes: {
+        "./App": path.resolve(__dirname, "../components/app/app"),
+        "./Button": path.resolve(__dirname, "../components/button/button"),
       },
       shared: {
         ...dependencies,
@@ -29,6 +28,9 @@ module.exports = {
           requiredVersion: dependencies["react-dom"],
         },
       },
+    }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, "../", "index.html"),
     }),
   ],
   module: {
@@ -44,9 +46,13 @@ module.exports = {
         test: /\.css$/,
         use: ["style-loader", "css-loader"]
       },
-    ]
+      {
+        test: /\.svg$/,
+        use: ['@svgr/webpack'],
+      }
+    ],
   },
   devServer: {
-    port: 3000
+    port: 4000,
   },
 };
